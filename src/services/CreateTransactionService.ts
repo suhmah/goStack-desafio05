@@ -1,6 +1,12 @@
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import Transaction from '../models/Transaction';
 
+interface RequestTransactionDTO {
+  title: string;
+  value: number;
+  type: "income" | "outcome";
+}
+
 class CreateTransactionService {
   private transactionsRepository: TransactionsRepository;
 
@@ -8,8 +14,22 @@ class CreateTransactionService {
     this.transactionsRepository = transactionsRepository;
   }
 
-  public execute(): Transaction {
-    // TODO
+  public execute({ title, value, type }: RequestTransactionDTO): Transaction {
+    if(type == "outcome") {
+       const { total } = this.transactionsRepository.getBalance();
+
+       if(value > total) {
+         throw Error('O valor a ser debitado é maior do que o saldo disponível!');
+       }
+    }
+
+    const transaction = this.transactionsRepository.create({
+      title,
+      type,
+      value
+    });
+
+    return transaction;
   }
 }
 
